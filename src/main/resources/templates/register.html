@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header :: header('Registro')"/>
+<body>
+<div id="root">
+  <div th:replace="fragments/nav :: nav"/>
+  <div id="container">
+    <div id="row">
+    <div class="twelve columns">
+      <h1>Registro usuario</h1>
+      <div class="six columns align-center">
+        <label for="nombreUsuario">Nombre Usuario</label>
+        <input v-model="nombreUsuario" class="u-full-width" type="text" placeholder="tu nombre de usuario" id="nombreUsuario"/>
+        <label for="contraseña">Password</label>
+        <input v-model="contraseña" class="u-full-width" placeholder="ingresa contraseña" type="password" id="contraseña"/>
+        <label for="confirmacionContraseña">Confirma contraseña</label>
+        <input v-model="confirmacionContraseña" class="u-full-width" placeholder="confirma tu contraseña" type="password" id="confirmacionContraseña"/>
+        <input class="u-full-width button-primary" type="submit" v-on:click="register" value="Registar" />
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+</body>
+<div th:replace="fragments/footer :: foot"/>
+<script>
+  let app;
+  app = new Vue({
+    el: '#root',
+    mounted() {
+      Event.$on('logged-in',function(){
+        window.location.replace("/");
+      })
+    },
+    data:{
+      nombreUsuario: '',
+      contraseña: '',
+      confirmacionContraseña: '',
+      activo: true
+    },
+    methods: {
+      register(){
+        if(this.contraseña !== this.confirmacionContraseña){
+          alert("Contraseñas no coinciden");
+          return;
+        }
+        axios({
+          method:'post',
+          url:'registro',
+          data:{nombreUsuario:this.nombreUsuario,contraseña:this.contraseña,confirmacionContraseña:this.confirmacionContraseña, activo: this.activo}
+
+        }).then(function(response){
+          alert("Usuario registardo con exito!")
+          document.location.replace("/");
+        });
+      }
+    }
+  });
+</script>
+</html>

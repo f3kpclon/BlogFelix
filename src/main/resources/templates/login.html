@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+
+<head th:replace= "fragments/header :: header('Login')" />
+<body>
+<div id="root">
+  <div th:replace="fragments/nav :: nav"></div>
+  <div class="container">
+    <div class="row">
+      <div class="twelve columns">
+        <h4 id="loginHeader">Login</h4>
+        <div class="six columns align-center">
+          <label for="nombreUsuario">Nombre Usuario</label>
+          <input v-model="nombreUsuario" class="u-full-width" type="text" placeholder="Nombre usuario" id="nombreUsuario"/>
+          <label for="contraseña">Contraseña</label>
+          <input v-model="contraseña" class="u-full-width" type="password" id="contraseña"/>
+          <input class="u-full-width button-primary" type="submit" v-on:click="login" value="Ingresar" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+<div th:replace="fragments/footer :: foot"></div>
+<script>
+  let app;
+  app = new Vue({
+    el: '#root',
+    data: {
+      nombreUsuario: '',
+      contraseña: '',
+    },
+    mounted(){
+      Event.$on('logged-in',function(){
+        window.location.replace("/");
+      })
+    },
+    methods: {
+      login() {
+
+        let params = new URLSearchParams()
+        params.append('grant_type', 'password')
+        params.append('username', this.nombreUsuario);
+        params.append('password', this.contraseña);
+        axios({
+          method: 'post',
+          url: 'oauth/token',
+          auth: {username: 'Client_Felix', password: 'secret'},
+          headers: {"Content-type": "application/x-www-form-urlencoded; charset=utf-8"},
+          data: params
+
+        }).then(function (response) {
+          //document.cookie = "access_token="+ response.data.access_token +";path=/;"
+          let setCookie = set_cookie("access_token",response.data.access_token);
+          setCookie;
+          document.location.replace("/");
+        })
+
+      }
+
+    }
+  });
+</script>
+</html>
+

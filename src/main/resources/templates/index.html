@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace= "fragments/header :: header('Mi Blog')" />
+<body>
+<div id="root">
+  <div th:replace="fragments/nav :: nav"></div>
+  <div class="container">
+    <div class="row">
+      <div class="twelve columns">
+        <h1>Blog Felix</h1>
+        <ul>
+          <li v-for="post in posts">
+            <h3><a :href="getLink(post)">{{post.titulo}}</a></h3>
+            <h6>Post creado por : {{post.usuario.nombreUsuario}}</h6>
+            <p>{{post.cuerpo}}</p>
+            <hr />
+          </li>
+        </ul>
+        <div v-if="isLoggedIn()">
+          <label for="titulo">Titulo</label>
+          <input v-model="titulo" class="u-full-width"type="text" placeholder="Titulo Post" id="titulo"/>
+          <label for="cuerpo">Post</label>
+          <textarea v-model="cuerpo" class="u-full-width" placeholder="Ingrese Post" id="cuerpo"></textarea>
+          <input class="u-full-width button-primary" type="submit" v-on:click="doPost" value="Enviar" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+<div th:replace="fragments/footer :: foot"></div>
+<script>
+  let app;
+  app = new Vue({
+    el:'#root',
+    data : {posts:[],
+      titulo:'',
+      cuerpo:''
+    },
+      mounted(){
+      this.fetchPosts();
+
+    }
+    ,
+    methods:{
+      fetchPosts(){
+        axios.get("/posts").then(function (response) {
+          app.posts = response.data;
+        }.bind(this));
+      },
+      getLink(post){
+        return '/post/' + post.id;
+      },
+      doPost(){
+        axios({
+          method:'post',
+          url:'/post?access_token='+ getCookies("access_token"),
+          data:{titulo: app.titulo, cuerpo: app.cuerpo}
+        }).then(function (response) {
+          app.fetchPosts();
+        }).bind(this);
+      },
+      isLoggedIn(){
+        return window.Event.isLoggedIn;
+      }
+    }
+  })
+</script>
+
+</html>
+

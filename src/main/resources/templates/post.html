@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header :: header('Post')" />
+<body>
+<div id="root">
+  <div th:replace="fragments/nav :: nav"></div>
+  <div class="container">
+    <div class="row">
+      <div class="twelve columns">
+        <h1>Blog de Felix</h1>
+        <ul>
+          <li v-if="post">
+            <h3>{{post.titulo}}</h3>
+            <h6>Creado por : {{post.usuario.nombreUsuario}}</h6>
+            <p>{{post.cuerpo}}</p>
+            <hr />
+          </li>
+        </ul>
+        <div class="comentarios">
+          <h2>Comentarios</h2>
+          <ul>
+            <li v-for="comentario in comentarios">
+              <h6>Posteado por: <b>{{comentario.usuario.nombreUsuario}}</b></h6>
+              <p>{{comentario.text}}</p>
+            </li>
+          </ul>
+        </div>
+        <div v-if="isLoggedIn()">
+          <label for="comentario">Ingrese comentario</label>
+          <textarea v-model="comentarioText" class="u-full-width" placeholder="Comente" id="comentario"></textarea>
+          <input class="u-full-width button-primary" type="submit" v-on:click="doComment" value="Submit" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+<div th:replace="fragments/footer :: foot"></div>
+
+<script>
+  let app;
+   app = new Vue({
+    el: '#root',
+    data : {post: null, comentarioText: '', comentarios: []},
+    created(){
+      this.fetchPosts();
+      this.fetchComments();
+    },
+    methods: {
+      fetchPosts(){
+        axios.get("/posts/getPost/" + this.getPostId()).then(function(response){
+          app.post = response.data;
+        }.bind(this));
+      },
+      isLoggedIn(){
+        return window.Event.isLoggedIn;
+      },
+      doComment(){
+        axios({
+          method:'post',
+          url:'postComment?access_token=' + getCookies("access_token"),
+          data:{text:this.comentarioText,postId:this.post.id}
+        }).then(function(response){
+          this.fetchComments();
+        }.bind(this));
+      },
+      fetchComments(){
+        axios.get("/comments/" + this.getPostId()).then(function(response){
+          app.comentarios = response.data;
+        }.bind(this));
+      },
+      getPostId(){
+        let splitted = window.location.href.split('/');
+        return splitted[splitted.length-1];
+      }
+    }
+
+  });
+</script>
+</html>
